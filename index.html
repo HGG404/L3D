@@ -7,6 +7,8 @@
     <meta name="description" content="ค้นพบไฟล์ดิจิทัลคุณภาพสูงสำหรับงานออกแบบและโปรเจกต์ของคุณที่ 3DShop">
     <!-- Font Awesome CDN สำหรับไอคอน spinner -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Google Fonts สำหรับฟอนต์ Prompt -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;700&display=swap" rel="stylesheet">
     <!-- Favicon -->
     <link rel="icon" href="3DShop_FolderDownload_Icon.ico" type="image/x-icon">
     <style>
@@ -15,7 +17,7 @@
             padding: 0;
             height: 100%;
             overflow: hidden;
-            font-family: 'Prompt', Arial, sans-serif;
+            font-family: 'Prompt', 'Arial', sans-serif;
         }
         iframe {
             width: 100%;
@@ -59,7 +61,7 @@
             display: none; /* ซ่อน spinner เมื่อมีข้อผิดพลาดหรือแจ้งเตือน Firefox */
         }
         .loader.firefox-warning .loader-content {
-            background: rgba(0, 0, 0, 0.7); /* เพิ่มพื้นหลังกึ่งโปร่งใสสำหรับ Firefox */
+            background: rgba(0, 0, 0, 0.7); /* พื้นหลังกึ่งโปร่งใสสำหรับ Firefox */
             border-radius: 10px;
             z-index: 1000; /* ให้แน่ใจว่าไม่ถูกบัง */
         }
@@ -73,10 +75,6 @@
             .loader.error p, .loader.firefox-warning p {
                 font-size: 14px;
             }
-        }
-        @font-face {
-            font-family: 'Prompt';
-            src: url('https://fonts.googleapis.com/css2?family=Prompt:wght@400;700&display=swap');
         }
     </style>
 </head>
@@ -103,9 +101,9 @@
             const loader = document.querySelector('.loader');
             loader.classList.add('firefox-warning');
             loader.querySelector('p').textContent = 'ขออภัย 3DShop ไม่รองรับเบราว์เซอร์ Firefox กรุณาใช้ Google Chrome, Safari หรือ Microsoft Edge';
-            // ป้องกันการโหลด iframe
+            // ลบ iframe เพื่อป้องกันการบัง
             const iframe = document.getElementById('shopIframe');
-            iframe.removeAttribute('src');
+            iframe.parentNode.removeChild(iframe);
         } else {
             // สำหรับเบราว์เซอร์อื่นๆ รันตามปกติ
             // Timeout หากโหลดนานเกินไป
