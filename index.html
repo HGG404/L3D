@@ -42,7 +42,7 @@
 <body>
   <!-- ฝัง Web App จาก Google Apps Script -->
   <iframe
-    src="https://script.google.com/macros/s/AKfycbzpnkRgO5uEp-uHiliXhdrA8sibz3gq3u2q_AFyTOUvcnBIltUIwcepR6dbatUYlAo/exec"
+    src="https://script.google.com/macros/s/AKfycbxIbq4m7CeV3lzYmViIBrUFeaGpJjL9yBKrqp5YSOzHU9y_uEV5yqjlbE8p1YNRNyE/exec"
     allowfullscreen
     sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads"
     referrerpolicy="no-referrer"
@@ -54,7 +54,8 @@
 
   <script>
     window.addEventListener('message', function(event) {
-      if (event.origin === 'https://script.google.com') {
+      // ตรวจสอบ origin เพื่อความปลอดภัย
+      if (event.origin === 'https://script.google.com' || event.origin.includes('googleusercontent.com')) {
         const data = event.data;
         if (data.downloadLink) {
           const messageDiv = document.getElementById('downloadMessage');
@@ -64,6 +65,8 @@
             messageDiv.style.display = 'none';
           }, 10000);
         }
+      } else {
+        console.warn('Received message from unexpected origin:', event.origin);
       }
     });
   </script>
