@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>3DShop</title>
-
-  <!-- Favicon -->
   <link rel="icon" href="3DShop_FolderDownload_Icon.ico" type="image/x-icon">
 
   <style>
@@ -13,7 +11,6 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      overflow: hidden;
       background-color: #111;
     }
 
@@ -23,16 +20,51 @@
       border: none;
       display: block;
     }
+    
+    /* ตัวเลือกสำรองหาก iframe ไม่ทำงาน */
+    .fallback-message {
+      color: white;
+      text-align: center;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
   </style>
 </head>
 <body>
   <!-- ฝัง Web App จาก Google Apps Script -->
   <iframe
-  src="https://script.google.com/macros/s/AKfycbwtB1nUNQ8fTfOfo7lsZDkqQWYQf-0BiwqD7NLgZ03ofs_S0DfB93GxAfXVaUakoBjCRA/exec"
-  allowfullscreen
-  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-  referrerpolicy="no-referrer"
-  loading="lazy">
-</iframe>
+    src="https://script.google.com/macros/s/AKfycbzlWOAWkULAVxCyeaAQqpFw5haCpo_rsYpPCH4RBzWHN5VX-eT-td03XfiurJFjtpc/exec"
+    allow="fullscreen"
+    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads"
+    referrerpolicy="no-referrer-when-downgrade"
+    loading="lazy">
+  </iframe>
+  
+  <!-- ตัวเลือกสำรอง -->
+  <div class="fallback-message" style="display:none;">
+    <h2>ไม่สามารถโหลดแอปพลิเคชันได้</h2>
+    <p>กรุณาเข้าถึงแอปพลิเคชันโดยตรงที่: <a href="https://script.google.com/macros/s/AKfycbzlWOAWkULAVxCyeaAQqpFw5haCpo_rsYpPCH4RBzWHN5VX-eT-td03XfiurJFjtpc/exec" target="_blank">ลิงก์นี้</a></p>
+  </div>
+
+  <script>
+    // ตรวจสอบว่า iframe โหลดสำเร็จหรือไม่
+    window.addEventListener('DOMContentLoaded', () => {
+      const iframe = document.querySelector('iframe');
+      const fallback = document.querySelector('.fallback-message');
+      
+      iframe.onerror = () => {
+        iframe.style.display = 'none';
+        fallback.style.display = 'block';
+      };
+      
+      // ตรวจสอบหลังจากโหลด 5 วินาที
+      setTimeout(() => {
+        if (!iframe.contentDocument || iframe.contentDocument.readyState !== 'complete') {
+          iframe.style.display = 'none';
+          fallback.style.display = 'block';
+        }
+      }, 5000);
+    });
+  </script>
 </body>
 </html>
