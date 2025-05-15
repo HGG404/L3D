@@ -53,9 +53,15 @@
         .loader.error p, .loader.firefox-warning p {
             color: #ff4d4d;
             font-weight: bold;
+            font-size: 16px; /* ขยายข้อความแจ้งเตือน */
         }
         .loader.error i, .loader.firefox-warning i {
             display: none; /* ซ่อน spinner เมื่อมีข้อผิดพลาดหรือแจ้งเตือน Firefox */
+        }
+        .loader.firefox-warning .loader-content {
+            background: rgba(0, 0, 0, 0.7); /* เพิ่มพื้นหลังกึ่งโปร่งใสสำหรับ Firefox */
+            border-radius: 10px;
+            z-index: 1000; /* ให้แน่ใจว่าไม่ถูกบัง */
         }
         @media (max-width: 768px) {
             .loader-content p {
@@ -63,6 +69,9 @@
             }
             .loader-content i {
                 font-size: 20px;
+            }
+            .loader.error p, .loader.firefox-warning p {
+                font-size: 14px;
             }
         }
         @font-face {
