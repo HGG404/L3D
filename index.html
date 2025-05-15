@@ -8,9 +8,6 @@
   <!-- Favicon -->
   <link rel="icon" href="3DShop_FolderDownload_Icon.ico" type="image/x-icon">
 
-  <!-- Content Security Policy -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://script.google.com https://apis.google.com; connect-src 'self' https://script.google.com https://drive.google.com https://*.googleusercontent.com; frame-src 'self' https://script.google.com; img-src 'self' https://lh5.googleusercontent.com https://drive.google.com; style-src 'self' 'unsafe-inline';">
-
   <style>
     html, body {
       margin: 0;
@@ -26,49 +23,16 @@
       border: none;
       display: block;
     }
-
-    #downloadMessage {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      background: #333;
-      color: #fff;
-      padding: 10px;
-      border-radius: 5px;
-      display: none;
-    }
   </style>
 </head>
 <body>
   <!-- ฝัง Web App จาก Google Apps Script -->
   <iframe
-    src="https://script.google.com/macros/s/AKfycbwrhwhkZoPcdqvpjQNVyqM4kmAM0_o4Vwnegi_Sz2ONKsyA9CEGoI9DbXS5bJGQ3OQ/exec"
-    allowfullscreen
-    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads"
-    referrerpolicy="no-referrer"
-    loading="lazy">
-  </iframe>
-
-  <!-- ข้อความแจ้งเตือน -->
-  <div id="downloadMessage"></div>
-
-  <script>
-    window.addEventListener('message', function(event) {
-      // ยอมรับ origin จาก Google Apps Script และ subdomains
-      if (event.origin.includes('google.com') || event.origin.includes('googleusercontent.com')) {
-        const data = event.data;
-        if (data.downloadLink) {
-          const messageDiv = document.getElementById('downloadMessage');
-          messageDiv.innerHTML = `กรุณาล็อกอินด้วยอีเมลที่ใช้สั่งซื้อ (<b>${data.email || 'email ที่สั่งซื้อ'}</b>) แล้ว <a href="${data.downloadLink}" target="_blank">คลิกที่นี่</a> เพื่อดาวน์โหลดไฟล์`;
-          messageDiv.style.display = 'block';
-          setTimeout(() => {
-            messageDiv.style.display = 'none';
-          }, 10000);
-        }
-      } else {
-        console.warn('Received message from unexpected origin:', event.origin);
-      }
-    });
-  </script>
+  src="https://script.google.com/macros/s/AKfycbyPOWCtJvdXVlw8-c4hACHLez03nHFDSIGN9657wyGIsyPjsOgsJLpUolci_C1lOjo/exec"
+  allowfullscreen
+  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+  referrerpolicy="no-referrer"
+  loading="lazy">
+</iframe>
 </body>
 </html>
