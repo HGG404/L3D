@@ -42,7 +42,7 @@
 <body>
   <!-- ฝัง Web App จาก Google Apps Script -->
   <iframe
-    src="https://script.google.com/macros/s/AKfycbwBErkyhIcOSwFvycVGZMVqp2loVyz3uWgRFcqF0D0Xi6WPCJF8yu9KrQFj59vn2Mo/exec"
+    src="https://script.google.com/macros/s/AKfycbzpnkRgO5uEp-uHiliXhdrA8sibz3gq3u2q_AFyTOUvcnBIltUIwcepR6dbatUYlAo/exec"
     allowfullscreen
     sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads"
     referrerpolicy="no-referrer"
@@ -57,13 +57,12 @@
       if (event.origin === 'https://script.google.com') {
         const data = event.data;
         if (data.downloadLink) {
-          // เปิดลิงก์ในแท็บใหม่เพื่อให้ผู้ใช้ล็อกอินและดาวน์โหลด
           const messageDiv = document.getElementById('downloadMessage');
-          messageDiv.innerHTML = `กรุณาล็อกอินด้วยอีเมลที่ใช้สั่งซื้อเพื่อดาวน์โหลดไฟล์ <a href="${data.downloadLink}" target="_blank">คลิกที่นี่</a>`;
+          messageDiv.innerHTML = `กรุณาล็อกอินด้วยอีเมลที่ใช้สั่งซื้อ (<b>${data.email || 'email ที่สั่งซื้อ'}</b>) แล้ว <a href="${data.downloadLink}" target="_blank">คลิกที่นี่</a> เพื่อดาวน์โหลดไฟล์`;
           messageDiv.style.display = 'block';
           setTimeout(() => {
             messageDiv.style.display = 'none';
-          }, 5000);
+          }, 10000);
         }
       }
     });
