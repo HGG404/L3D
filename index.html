@@ -8,7 +8,7 @@
     <!-- Font Awesome CDN สำหรับไอคอน spinner -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <!-- Favicon -->
-  <link rel="icon" href="3DShop_FolderDownload_Icon.ico" type="image/x-icon">
+    <link rel="icon" href="3DShop_FolderDownload_Icon.ico" type="image/x-icon">
     <style>
         body, html {
             margin: 0;
@@ -50,12 +50,12 @@
             margin: 10px 0 0;
             text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
         }
-        .loader.error p {
+        .loader.error p, .loader.firefox-warning p {
             color: #ff4d4d;
             font-weight: bold;
         }
-        .loader.error i {
-            display: none; /* ซ่อน spinner เมื่อมีข้อผิดพลาด */
+        .loader.error i, .loader.firefox-warning i {
+            display: none; /* ซ่อน spinner เมื่อมีข้อผิดพลาดหรือแจ้งเตือน Firefox */
         }
         @media (max-width: 768px) {
             .loader-content p {
@@ -78,19 +78,36 @@
             <p>กำลังโหลด 3DShop</p>
         </div>
     </div>
-    <iframe src="https://script.google.com/macros/s/AKfycbzAfW5wpzumh-mDJicLJxWv7eHIPLBuaw2onxDWRj_eP6w6Lf65csM10S17R8SRrNQ/exec" 
+    <iframe id="shopIframe" 
+            src="https://script.google.com/macros/s/AKfycbzAfW5wpzumh-mDJicLJxWv7eHIPLBuaw2onxDWRj_eP6w6Lf65csM10S17R8SRrNQ/exec" 
             title="3DShop" 
             onload="document.querySelector('.loader').style.opacity='0'; setTimeout(() => document.querySelector('.loader').style.display='none', 500); this.style.display='block';"
             onerror="document.querySelector('.loader').classList.add('error'); document.querySelector('.loader').querySelector('p').textContent='ไม่สามารถโหลด 3DShop ได้ กรุณารีเฟรช';"></iframe>
     <script>
-        // Timeout หากโหลดนานเกินไป
-        setTimeout(() => {
+        // ตรวจสอบว่าเป็น Firefox หรือไม่
+        function isFirefox() {
+            return navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+        }
+
+        // ถ้าเป็น Firefox แสดงข้อความแจ้งเตือนและหยุดการโหลด
+        if (isFirefox()) {
             const loader = document.querySelector('.loader');
-            if (loader.style.display !== 'none') {
-                loader.classList.add('error');
-                loader.querySelector('p').textContent = 'การโหลดช้าเกินไป กรุณารีเฟรช';
-            }
-        }, 10000); // 10 วินาที
+            loader.classList.add('firefox-warning');
+            loader.querySelector('p').textContent = 'ขออภัย 3DShop ไม่รองรับเบราว์เซอร์ Firefox กรุณาใช้ Google Chrome, Safari หรือ Microsoft Edge';
+            // ป้องกันการโหลด iframe
+            const iframe = document.getElementById('shopIframe');
+            iframe.removeAttribute('src');
+        } else {
+            // สำหรับเบราว์เซอร์อื่นๆ รันตามปกติ
+            // Timeout หากโหลดนานเกินไป
+            setTimeout(() => {
+                const loader = document.querySelector('.loader');
+                if (loader.style.display !== 'none') {
+                    loader.classList.add('error');
+                    loader.querySelector('p').textContent = 'การโหลดช้าเกินไป กรุณารีเฟรช';
+                }
+            }, 10000); // 10 วินาที
+        }
     </script>
 </body>
 </html>
