@@ -42,7 +42,7 @@
 <body>
   <!-- ฝัง Web App จาก Google Apps Script -->
   <iframe
-    src="https://script.google.com/macros/s/AKfycbyZ0IfLkMEjFjR7-_vR65IsEMqol74ci9CS7o4i1Aj7Io-T2ttBDxu5Aeigjnfkig/exec"
+    src="https://script.google.com/macros/s/AKfycbwBErkyhIcOSwFvycVGZMVqp2loVyz3uWgRFcqF0D0Xi6WPCJF8yu9KrQFj59vn2Mo/exec"
     allowfullscreen
     sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads"
     referrerpolicy="no-referrer"
@@ -53,27 +53,17 @@
   <div id="downloadMessage"></div>
 
   <script>
-    // รับข้อความจาก Google Apps Script Web App
     window.addEventListener('message', function(event) {
-      // ตรวจสอบ origin เพื่อความปลอดภัย
       if (event.origin === 'https://script.google.com') {
         const data = event.data;
         if (data.downloadLink) {
-          // สร้างลิงก์ดาวน์โหลด
-          const link = document.createElement('a');
-          link.href = data.downloadLink;
-          link.download = ''; // บังคับดาวน์โหลด
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-
-          // แสดงข้อความแจ้งเตือน
+          // เปิดลิงก์ในแท็บใหม่เพื่อให้ผู้ใช้ล็อกอินและดาวน์โหลด
           const messageDiv = document.getElementById('downloadMessage');
-          messageDiv.textContent = 'กำลังดาวน์โหลดไฟล์...';
+          messageDiv.innerHTML = `กรุณาล็อกอินด้วยอีเมลที่ใช้สั่งซื้อเพื่อดาวน์โหลดไฟล์ <a href="${data.downloadLink}" target="_blank">คลิกที่นี่</a>`;
           messageDiv.style.display = 'block';
           setTimeout(() => {
             messageDiv.style.display = 'none';
-          }, 3000);
+          }, 5000);
         }
       }
     });
