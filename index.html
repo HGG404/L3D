@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <!-- Google Fonts สำหรับฟอนต์ Prompt -->
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;700&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 สำหรับ modal ซูม -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Favicon -->
     <link rel="icon" href="3DShop_FolderDownload_Icon.ico" type="image/x-icon">
     <style>
@@ -23,7 +25,7 @@
             width: 100%;
             height: 100%;
             border: none;
-            display: none; /* ซ่อน iframe จนกว่าโหลดเสร็จ */
+            display: none;
         }
         .loader {
             position: fixed;
@@ -57,10 +59,8 @@
             font-weight: bold;
         }
         .loader.error i {
-            display: none; /* ซ่อน spinner เมื่อมีข้อผิดพลาด */
+            display: none;
         }
-
-        /* สไตล์สำหรับหน้าแจ้งเตือน Firefox */
         .loader.firefox-warning {
             background: linear-gradient(135deg, #2c3e50, #1a252f);
             overflow: auto;
@@ -105,24 +105,12 @@
             0% { opacity: 0; transform: translateY(20px); }
             100% { opacity: 1; transform: translateY(0); }
         }
-
         @media (max-width: 768px) {
-            .loader-content p {
-                font-size: 12px;
-            }
-            .loader-content i {
-                font-size: 20px;
-            }
-            .loader.firefox-warning p {
-                font-size: 16px;
-            }
-            .loader.firefox-warning i {
-                font-size: 36px;
-            }
-            .loader.firefox-warning .loader-content {
-                padding: 20px;
-                max-width: 90%;
-            }
+            .loader-content p { font-size: 12px; }
+            .loader-content i { font-size: 20px; }
+            .loader.firefox-warning p { font-size: 16px; }
+            .loader.firefox-warning i { font-size: 36px; }
+            .loader.firefox-warning .loader-content { padding: 20px; max-width: 90%; }
         }
     </style>
 </head>
@@ -134,14 +122,49 @@
         </div>
     </div>
     <iframe id="shopIframe" 
-            src="https://script.google.com/macros/s/AKfycbzAfW5wpzumh-mDJicLJxWv7eHIPLBuaw2onxDWRj_eP6w6Lf65csM10S17R8SRrNQ/exec" 
+            src="https://script.google.com/macros/s/AKfycbzGFGURMqpsM6_lJZ5WhtkfaG-E77rZjG5bTGd5D9CpeuecD01JUasCiP4yO9Pkwb4/exec" 
             title="3DShop" 
-            onload="document.querySelector('.loader').style.opacity='0'; setTimeout(() => document.querySelector('.loader').style.display='none', 500); this.style.display='block';"
+            allowfullscreen
+            onload="document.querySelector('.loader').style.opacity='0'; setTimeout(() => document.querySelector('.loader').style.display='none', 500); this.style.display='block'; initializeZoom();"
             onerror="document.querySelector('.loader').classList.add('error'); document.querySelector('.loader').querySelector('p').textContent='ไม่สามารถโหลด 3DShop ได้ กรุณารีเฟรช';"></iframe>
     <script>
         // ตรวจสอบว่าเป็น Firefox หรือไม่
         function isFirefox() {
             return navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+        }
+
+        // เริ่มต้นการซูมสำหรับภาพใน iframe
+        function initializeZoom() {
+            const iframe = document.getElementById('shopIframe');
+            if (!iframe || !iframe.contentDocument) return;
+
+            const images = iframe.contentDocument.querySelectorAll('img');
+            images.forEach(img => {
+                // เพิ่ม cursor เพื่อบ่งบอกว่าซูมได้
+                img.style.cursor = 'zoom-in';
+                img.addEventListener('click', (e) => {
+                    // ป้องกันการเรียก fullscreen หรือการซูมแบบเดิม
+                    e.preventDefault();
+                    e.stopPropagation();
+                    Swal.fire({
+                        title: 'ภาพสินค้า',
+                        html: `
+                            <img src="${img.src}" style="max-width:100%; max-height:80vh; border-radius:12px;" />
+                        `,
+                        background: '#1f2937',
+                        showConfirmButton: false,
+                        showCloseButton: true,
+                        customClass: { popup: 'rounded-4 shadow-lg' }
+                    });
+                });
+            });
+
+            // ปิดการใช้งาน requestFullscreen ใน iframe
+            const originalRequestFullscreen = iframe.contentDocument.documentElement.requestFullscreen;
+            iframe.contentDocument.documentElement.requestFullscreen = function() {
+                console.warn('requestFullscreen ถูกปิดการใช้งานใน iframe');
+                return Promise.reject(new Error('Fullscreen is disabled in this context'));
+            };
         }
 
         // ถ้าเป็น Firefox แสดงข้อความแจ้งเตือนและหยุดการโหลด
@@ -154,19 +177,16 @@
                 <p style="color: #fff; font-size: 14px;">กรุณาใช้ Google Chrome, Safari หรือ Microsoft Edge</p>
                 <a href="https://www.google.com/chrome/" class="browser-btn">ดาวน์โหลด Chrome</a>
             `;
-            // ลบ iframe เพื่อป้องกันการบัง
             const iframe = document.getElementById('shopIframe');
             iframe.parentNode.removeChild(iframe);
         } else {
-            // สำหรับเบราว์เซอร์อื่นๆ รันตามปกติ
-            // Timeout หากโหลดนานเกินไป
             setTimeout(() => {
                 const loader = document.querySelector('.loader');
                 if (loader.style.display !== 'none') {
                     loader.classList.add('error');
                     loader.querySelector('p').textContent = 'การโหลดช้าเกินไป กรุณารีเฟรช';
                 }
-            }, 10000); // 10 วินาที
+            }, 10000);
         }
     </script>
 </body>
