@@ -1,4 +1,193 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3DShop - ไฟล์ดิจิทัลคุณภาพสูง</title>
+    <meta name="description" content="ค้นพบไฟล์ดิจิทัลคุณภาพสูงสำหรับงานออกแบบและโปรเจกต์ของคุณที่ 3DShop">
+    <!-- Font Awesome CDN สำหรับไอคอน -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Google Fonts สำหรับฟอนต์ Prompt -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;700&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 สำหรับ modal ซูม -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Favicon -->
+    <link rel="icon" href="3DShop_FolderDownload_Icon.ico" type="image/x-icon">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Prompt', 'Arial', sans-serif;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: none;
+        }
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1e3a8a, #4b5563);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            transition: opacity 0.5s ease-out;
+        }
+        .loader-content {
+            text-align: center;
+            padding: 20px;
+        }
+        .loader-content i {
+            font-size: 24px;
+            color: #d4af37;
+        }
+        .loader-content p {
+            font-size: 14px;
+            color: #fff;
+            margin: 10px 0 0;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        }
+        .loader.error p {
+            color: #ff4d4d;
+            font-weight: bold;
+        }
+        .loader.error i {
+            display: none;
+        }
+        .loader.firefox-warning {
+            background: linear-gradient(135deg, #2c3e50, #1a252f);
+            overflow: auto;
+        }
+        .loader.firefox-warning .loader-content {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 1000;
+            animation: fadeIn 1s ease-in-out;
+        }
+        .loader.firefox-warning i {
+            display: block;
+            font-size: 48px;
+            color: #ff4d4d;
+            margin-bottom: 20px;
+        }
+        .loader.firefox-warning p {
+            font-size: 18px;
+            color: #ff4d4d;
+            margin: 0 0 20px;
+            text-shadow: none;
+        }
+        .loader.firefox-warning .browser-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #d4af37;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+        .loader.firefox-warning .browser-btn:hover {
+            background: #b8972e;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 768px) {
+            .loader-content p { font-size: 12px; }
+            .loader-content i { font-size: 20px; }
+            .loader.firefox-warning p { font-size: 16px; }
+            .loader.firefox-warning i { font-size: 36px; }
+            .loader.firefox-warning .loader-content { padding: 20px; max-width: 90%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="loader">
+        <div class="loader-content">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>กำลังโหลด 3DShop</p>
+        </div>
+    </div>
+    <iframe id="shopIframe" 
+            src="https://script.google.com/macros/s/AKfycbxsQA40qVk004S5TG7zslb4QHatJoMZ3gcqxWoP96WmyJz-VqWAQsLpbveVOs-NaLI/exec" 
+            title="3DShop" 
+            allowfullscreen
+            onload="document.querySelector('.loader').style.opacity='0'; setTimeout(() => document.querySelector('.loader').style.display='none', 500); this.style.display='block'; initializeZoom();"
+            onerror="document.querySelector('.loader').classList.add('error'); document.querySelector('.loader').querySelector('p').textContent='ไม่สามารถโหลด 3DShop ได้ กรุณารีเฟรช';"></iframe>
+    <script>
+        // ตรวจสอบว่าเป็น Firefox หรือไม่
+        function isFirefox() {
+            return navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+        }
 
+        // เริ่มต้นการซูมสำหรับภาพใน iframe
+        function initializeZoom() {
+            const iframe = document.getElementById('shopIframe');
+            if (!iframe || !iframe.contentDocument) return;
+
+            const images = iframe.contentDocument.querySelectorAll('img');
+            images.forEach(img => {
+                // เพิ่ม cursor เพื่อบ่งบอกว่าซูมได้
+                img.style.cursor = 'zoom-in';
+                img.addEventListener('click', (e) => {
+                    // ป้องกันการเรียก fullscreen หรือการซูมแบบเดิม
+                    e.preventDefault();
+                    e.stopPropagation();
+                    Swal.fire({
+                        title: 'ภาพสินค้า',
+                        html: `
+                            <img src="${img.src}" style="max-width:100%; max-height:80vh; border-radius:12px;" />
+                        `,
+                        background: '#1f2937',
+                        showConfirmButton: false,
+                        showCloseButton: true,
+                        customClass: { popup: 'rounded-4 shadow-lg' }
+                    });
+                });
+            });
+
+            // ปิดการใช้งาน requestFullscreen ใน iframe
+            const originalRequestFullscreen = iframe.contentDocument.documentElement.requestFullscreen;
+            iframe.contentDocument.documentElement.requestFullscreen = function() {
+                console.warn('requestFullscreen ถูกปิดการใช้งานใน iframe');
+                return Promise.reject(new Error('Fullscreen is disabled in this context'));
+            };
+        }
+
+        // ถ้าเป็น Firefox แสดงข้อความแจ้งเตือนและหยุดการโหลด
+        if (isFirefox()) {
+            const loader = document.querySelector('.loader');
+            loader.classList.add('firefox-warning');
+            loader.querySelector('.loader-content').innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>ขออภัย 3DShop ไม่รองรับเบราว์เซอร์ Firefox</p>
+                <p style="color: #fff; font-size: 14px;">กรุณาใช้ Google Chrome, Safari หรือ Microsoft Edge</p>
+                <a href="https://www.google.com/chrome/" class="browser-btn">ดาวน์โหลด Chrome</a>
+            `;
+            const iframe = document.getElementById('shopIframe');
+            iframe.parentNode.removeChild(iframe);
+        } else {
+            setTimeout(() => {
+                const loader = document.querySelector('.loader');
+                if (loader.style.display !== 'none') {
+                    loader.classList.add('error');
+                    loader.querySelector('p').textContent = 'การโหลดช้าเกินไป กรุณารีเฟรช';
+                }
+            }, 10000);
+        }
+    </script>
+</body>
+</html>
