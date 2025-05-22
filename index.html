@@ -3,12 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"> <!-- รองรับ IE รุ่นเก่า -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>3DShop - ไฟล์ดิจิทัลคุณภาพสูง</title>
     <meta name="description" content="ค้นพบไฟล์ดิจิทัลคุณภาพสูงสำหรับงานออกแบบและโปรเจกต์ของคุณที่ 3DShop">
-    <!-- Google Fonts สำหรับฟอนต์ Prompt -->
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;700&family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome CDN (lazy load) -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;700&family=Sarabun:wght@400;700&display=swap" rel="stylesheet" type="text/css">
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
     <style>
         html, body {
@@ -32,8 +30,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: -webkit-linear-gradient(135deg, #1e3a8a, #4b5563); /* รองรับ Safari เก่า */
-            background: -moz-linear-gradient(135deg, #1e3a8a, #4b5563); /* รองรับ Firefox เก่า */
+            background: -webkit-linear-gradient(135deg, #1e3a8a, #4b5563);
+            background: -moz-linear-gradient(135deg, #1e3a8a, #4b5563);
             background: linear-gradient(135deg, #1e3a8a, #4b5563);
             display: flex;
             justify-content: center;
@@ -84,7 +82,6 @@
     <iframe src="https://script.google.com/macros/s/AKfycbwhDTd0nh2NKk3FDyQHQT7l8yMB-XhhwUPs--dYYSaBb8CJ3alr94xJDw5ETP7qUIk/exec" 
             title="3DShop"></iframe>
     <script>
-        // Polyfill สำหรับ requestAnimationFrame
         (function() {
             var lastTime = 0;
             var vendors = ['ms', 'moz', 'webkit', 'o'];
@@ -110,7 +107,6 @@
         const loader = document.querySelector('.loader');
         const loaderText = loader.querySelector('p');
 
-        // ฟังก์ชันซ่อน loader
         function hideLoader() {
             window.requestAnimationFrame(() => {
                 loader.style.opacity = '0';
@@ -121,35 +117,36 @@
             });
         }
 
-        // ฟังก์ชันแสดงข้อผิดพลาด
         function showError(message) {
             loader.classList.add('error');
             loaderText.textContent = message;
         }
 
-        // ตรวจสอบการโหลด iframe
+        // ตรวจสอบการโหลด iframe ด้วย event และ interval
         iframe.addEventListener('load', () => {
-            hideLoader();
+            if (iframe.contentWindow) {
+                hideLoader();
+            }
         });
 
-        // ตรวจสอบข้อผิดพลาด iframe
         iframe.addEventListener('error', () => {
-            showError('ไม่สามารถโหลด 3DShop ได้ กรุณารีเฟรชหน้าเว็บ');
+            showError('ไม่สามารถโหลด 3DShop ได้ กรุณารีเฟรช');
         });
 
-        // ตรวจสอบการโหลด iframe ด้วย fetch
-        fetch(iframe.src, { method: 'HEAD', mode: 'no-cors' })
-            .then(() => {
-                // ถ้า fetch สำเร็จ ไม่ต้องทำอะไร รอ iframe โหลด
-            })
-            .catch(() => {
-                showError('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ กรุณาตรวจสอบการเชื่อมต่อ');
-            });
+        let checkIframeLoad = setInterval(() => {
+            if (iframe.contentWindow && iframe.contentWindow.document.readyState === 'complete') {
+                clearInterval(checkIframeLoad);
+                hideLoader();
+            } else if (!document.contains(iframe)) {
+                clearInterval(checkIframeLoad);
+                showError('การโหลด iframe ล้มเหลว กรุณารีเฟรช');
+            }
+        }, 1000);
 
         // Timeout หากโหลดนานเกินไป
         setTimeout(() => {
             if (loader.style.display !== 'none') {
-                showError('การโหลดช้าเกินไป กรุณารีเฟรชหน้าเว็บ');
+                showError('การโหลดช้าเกินไป กรุณารีเฟรช');
             }
         }, 10000);
 
@@ -158,18 +155,11 @@
             if (loader.classList.contains('error')) {
                 loaderText.textContent = 'กำลังโหลด 3DShop';
                 loader.classList.remove('error');
-                iframe.src = iframe.src; // รีโหลด iframe
+                iframe.src = iframe.src;
             }
         });
         window.addEventListener('offline', () => {
             showError('ขาดการเชื่อมต่ออินเทอร์เน็ต กรุณาตรวจสอบ');
-        });
-
-        // ตรวจสอบการโหลดฟอนต์
-        document.fonts.ready.then(() => {
-            if (!document.fonts.check('16px Prompt')) {
-                loaderText.textContent = 'กำลังโหลด 3DShop (ฟอนต์อาจไม่แสดงผล)';
-            }
         });
     </script>
 </body>
