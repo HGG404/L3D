@@ -121,9 +121,35 @@
             <p>กำลังโหลด 3DShop</p>
         </div>
     </div>
-    <iframe id="shopIframe" src="" title="3DShop" allowfullscreen
-            onload="onIframeLoad()" onerror="onIframeError()"></iframe>
+    <iframe id="shopIframe" 
+            src="https://script.google.com/macros/s/AKfycbzxKvRAsb73D_kaljzJ8-Bvd4V7op4Uo6E8aUQUnyI7Lu12wwZGz-E_uQ75zRuXtjA/exec" 
+            title="3DShop" 
+            allowfullscreen
+            onload="onIframeLoad()"
+            onerror="onIframeError()"></iframe>
     <script>
+        // ฟังก์ชันจัดการ cookie
+        function setCookie(name, value, days) {
+            let expires = '';
+            if (days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = '; expires=' + date.toUTCString();
+            }
+            document.cookie = name + '=' + encodeURIComponent(value) + expires + '; path=/; SameSite=None; Secure';
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + '=';
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
+            }
+            return null;
+        }
+
         // ตรวจสอบว่าเป็น Firefox หรือไม่
         function isFirefox() {
             return navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
@@ -142,7 +168,9 @@
                     e.stopPropagation();
                     Swal.fire({
                         title: 'ภาพสินค้า',
-                        html: `<img src="${img.src}" style="max-width:100%; max-height:80vh; border-radius:12px;" />`,
+                        html: `
+                            <img src="${img.src}" style="max-width:100%; max-height:80vh; border-radius:12px;" />
+                        `,
                         background: '#1f2937',
                         showConfirmButton: false,
                         showCloseButton: true,
@@ -183,45 +211,34 @@
             }, 3000);
         }
 
-        // เก็บ sessionStorage ลง localStorage ก่อนรีเฟรช
+        // เก็บข้อมูลล็อกอินใน cookie ก่อนรีเฟรช
         window.addEventListener('beforeunload', function() {
             const userEmail = sessionStorage.getItem('userEmail');
             const userName = sessionStorage.getItem('userName');
             const isGoogleUser = sessionStorage.getItem('isGoogleUser');
             if (userEmail && userName) {
-                console.log('Saving session to localStorage');
-                localStorage.setItem('3DShopSession', JSON.stringify({
-                    userEmail: userEmail,
-                    userName: userName,
-                    isGoogleUser: isGoogleUser
-                }));
+                console.log('Saving session to cookies');
+                setCookie('3DShop_userEmail', userEmail, 1);
+                setCookie('3DShop_userName', userName, 1);
+                setCookie('3DShop_isGoogleUser', isGoogleUser, 1);
             }
         });
 
-        // ตั้งค่า iframe src พร้อม session data
-        function setIframeSrc() {
-            const iframe = document.getElementById('shopIframe');
-            const baseUrl = 'https://script.google.com/macros/s/AKfycbzxKvRAsb73D_kaljzJ8-Bvd4V7op4Uo6E8aUQUnyI7Lu12wwZGz-E_uQ75zRuXtjA/exec';
-            const sessionData = localStorage.getItem('3DShopSession');
-            let src = baseUrl;
-            if (sessionData) {
-                try {
-                    const { userEmail, userName, isGoogleUser } = JSON.parse(sessionData);
-                    if (userEmail && userName) {
-                        console.log('Setting iframe src with session data:', { userEmail, userName, isGoogleUser });
-                        const params = new URLSearchParams({
-                            userEmail: userEmail,
-                            userName: encodeURIComponent(userName),
-                            isGoogleUser: isGoogleUser
-                        });
-                        src = `${baseUrl}?${params.toString()}`;
-                    }
-                } catch (e) {
-                    console.error('Error parsing session data:', e);
-                }
+        // คืนค่าข้อมูลล็อกอินจาก cookie เมื่อหน้าโหลด
+        function restoreSessionFromCookies() {
+            const userEmail = getCookie('3DShop_userEmail');
+            const userName = getCookie('3DShop_userName');
+            const isGoogleUser = getCookie('3DShop_isGoogleUser');
+            if (userEmail && userName) {
+                console.log('Restoring session from cookies:', { userEmail, userName, isGoogleUser });
+                sessionStorage.setItem('userEmail', userEmail);
+                sessionStorage.setItem('userName', userName);
+                sessionStorage.setItem('isGoogleUser', isGoogleUser || 'false');
             }
-            iframe.src = src;
         }
+
+        // เรียกคืนค่าเมื่อหน้าโหลด
+        restoreSessionFromCookies();
 
         // ถ้าเป็น Firefox แสดงข้อความแจ้งเตือนและหยุดการโหลด
         if (isFirefox()) {
@@ -236,7 +253,6 @@
             const iframe = document.getElementById('shopIframe');
             iframe.parentNode.removeChild(iframe);
         } else {
-            setIframeSrc();
             setTimeout(() => {
                 const loader = document.querySelector('.loader');
                 if (loader.style.display !== 'none') {
