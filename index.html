@@ -5,21 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3DShop - ไฟล์ดิจิทัลคุณภาพสูง</title>
     <meta name="description" content="ค้นพบไฟล์ดิจิทัลคุณภาพสูงสำหรับงานออกแบบและโปรเจกต์ของคุณที่ 3DShop">
-    <!-- Font Awesome CDN สำหรับไอคอน spinner -->
+    <!-- Font Awesome CDN สำหรับไอคอน -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Google Fonts สำหรับฟอนต์ Prompt -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;700&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 สำหรับ modal ซูม -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Favicon -->
+    <link rel="icon" href="3DShop_FolderDownload_Icon.ico" type="image/x-icon">
     <style>
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
             overflow: hidden;
-            font-family: 'Prompt', Arial, sans-serif;
+            font-family: 'Prompt', 'Arial', sans-serif;
         }
         iframe {
             width: 100%;
             height: 100%;
             border: none;
-            display: none; /* ซ่อน iframe จนกว่าโหลดเสร็จ */
+            display: none;
         }
         .loader {
             position: fixed;
@@ -53,19 +59,58 @@
             font-weight: bold;
         }
         .loader.error i {
-            display: none; /* ซ่อน spinner เมื่อมีข้อผิดพลาด */
+            display: none;
+        }
+        .loader.firefox-warning {
+            background: linear-gradient(135deg, #2c3e50, #1a252f);
+            overflow: auto;
+        }
+        .loader.firefox-warning .loader-content {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 1000;
+            animation: fadeIn 1s ease-in-out;
+        }
+        .loader.firefox-warning i {
+            display: block;
+            font-size: 48px;
+            color: #ff4d4d;
+            margin-bottom: 20px;
+        }
+        .loader.firefox-warning p {
+            font-size: 18px;
+            color: #ff4d4d;
+            margin: 0 0 20px;
+            text-shadow: none;
+        }
+        .loader.firefox-warning .browser-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #d4af37;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+        .loader.firefox-warning .browser-btn:hover {
+            background: #b8972e;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
         @media (max-width: 768px) {
-            .loader-content p {
-                font-size: 12px;
-            }
-            .loader-content i {
-                font-size: 20px;
-            }
-        }
-        @font-face {
-            font-family: 'Prompt';
-            src: url('https://fonts.googleapis.com/css2?family=Prompt:wght@400;700&display=swap');
+            .loader-content p { font-size: 12px; }
+            .loader-content i { font-size: 20px; }
+            .loader.firefox-warning p { font-size: 16px; }
+            .loader.firefox-warning i { font-size: 36px; }
+            .loader.firefox-warning .loader-content { padding: 20px; max-width: 90%; }
         }
     </style>
 </head>
@@ -76,21 +121,128 @@
             <p>กำลังโหลด 3DShop</p>
         </div>
     </div>
-    <iframe src="https://script.google.com/macros/s/AKfycbxbFxRLNe16trwYSyOneOgnSm-xhp-R47SMv--TT223q33qhu6pkyMxVUJasU2cfaaM/exec" 
+    <iframe id="shopIframe" 
+            src="https://script.google.com/macros/s/AKfycbzxKvRAsb73D_kaljzJ8-Bvd4V7op4Uo6E8aUQUnyI7Lu12wwZGz-E_uQ75zRuXtjA/exec" 
             title="3DShop" 
-            onload="document.querySelector('.loader').style.opacity='0'; setTimeout(() => document.querySelector('.loader').style.display='none', 500); this.style.display='block';"
-            onerror="document.querySelector('.loader').classList.add('error'); document.querySelector('.loader').querySelector('p').textContent='ไม่สามารถโหลด 3DShop ได้ กรุณารีเฟรช';"></iframe>
+            allowfullscreen
+            onload="onIframeLoad()"
+            onerror="onIframeError()"></iframe>
     <script>
-        // Timeout หากโหลดนานเกินไป
-        setTimeout(() => {
+        // ตรวจสอบว่าเป็น Firefox หรือไม่
+        function isFirefox() {
+            return navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+        }
+
+        // เริ่มต้นการซูมสำหรับภาพใน iframe
+        function initializeZoom() {
+            const iframe = document.getElementById('shopIframe');
+            if (!iframe || !iframe.contentDocument) return;
+
+            const images = iframe.contentDocument.querySelectorAll('img');
+            images.forEach(img => {
+                img.style.cursor = 'zoom-in';
+                img.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    Swal.fire({
+                        title: 'ภาพสินค้า',
+                        html: `
+                            <img src="${img.src}" style="max-width:100%; max-height:80vh; border-radius:12px;" />
+                        `,
+                        background: '#1f2937',
+                        showConfirmButton: false,
+                        showCloseButton: true,
+                        customClass: { popup: 'rounded-4 shadow-lg' }
+                    });
+                });
+            });
+
+            const originalRequestFullscreen = iframe.contentDocument.documentElement.requestFullscreen;
+            iframe.contentDocument.documentElement.requestFullscreen = function() {
+                console.warn('requestFullscreen ถูกปิดการใช้งานใน iframe');
+                return Promise.reject(new Error('Fullscreen is disabled in this context'));
+            };
+        }
+
+        // จัดการเมื่อ iframe โหลดสำเร็จ
+        function onIframeLoad() {
+            console.log('Iframe loaded successfully');
             const loader = document.querySelector('.loader');
-            if (loader.style.display !== 'none') {
-                loader.classList.add('error');
-                loader.querySelector('p').textContent = 'การโหลดช้าเกินไป กรุณารีเฟรช';
+            const iframe = document.getElementById('shopIframe');
+            loader.style.opacity = '0';
+            setTimeout(() => {
+                loader.style.display = 'none';
+                iframe.style.display = 'block';
+            }, 500);
+            initializeZoom();
+
+            // คืนค่า sessionStorage จาก localStorage
+            const sessionData = localStorage.getItem('3DShopSession');
+            if (sessionData) {
+                try {
+                    const { userEmail, userName, isGoogleUser } = JSON.parse(sessionData);
+                    if (userEmail && userName) {
+                        console.log('Restoring session:', { userEmail, userName, isGoogleUser });
+                        sessionStorage.setItem('userEmail', userEmail);
+                        sessionStorage.setItem('userName', userName);
+                        sessionStorage.setItem('isGoogleUser', isGoogleUser);
+                    }
+                } catch (e) {
+                    console.error('Error restoring session:', e);
+                }
             }
-        }, 10000); // 10 วินาที
+        }
+
+        // จัดการเมื่อ iframe โหลดล้มเหลว
+        function onIframeError() {
+            console.error('Iframe failed to load');
+            const loader = document.querySelector('.loader');
+            loader.classList.add('error');
+            loader.querySelector('p').textContent = 'ไม่สามารถโหลด 3DShop ได้ กรุณารีเฟรช';
+            // ลองโหลด iframe ใหม่หลัง 5 วินาที
+            setTimeout(() => {
+                const iframe = document.getElementById('shopIframe');
+                iframe.src = iframe.src; // รีโหลด iframe
+            }, 5000);
+        }
+
+        // เก็บ sessionStorage ลง localStorage ก่อนรีเฟรช
+        window.addEventListener('beforeunload', function() {
+            const userEmail = sessionStorage.getItem('userEmail');
+            const userName = sessionStorage.getItem('userName');
+            const isGoogleUser = sessionStorage.getItem('isGoogleUser');
+            if (userEmail && userName) {
+                console.log('Saving session to localStorage');
+                localStorage.setItem('3DShopSession', JSON.stringify({
+                    userEmail: userEmail,
+                    userName: userName,
+                    isGoogleUser: isGoogleUser
+                }));
+            }
+        });
+
+        // ถ้าเป็น Firefox แสดงข้อความแจ้งเตือนและหยุดการโหลด
+        if (isFirefox()) {
+            const loader = document.querySelector('.loader');
+            loader.classList.add('firefox-warning');
+            loader.querySelector('.loader-content').innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>ขออภัย 3DShop ไม่รองรับเบราว์เซอร์ Firefox</p>
+                <p style="color: #fff; font-size: 14px;">กรุณาใช้ Google Chrome, Safari หรือ Microsoft Edge</p>
+                <a href="https://www.google.com/chrome/" class="browser-btn">ดาวน์โหลด Chrome</a>
+            `;
+            const iframe = document.getElementById('shopIframe');
+            iframe.parentNode.removeChild(iframe);
+        } else {
+            // เพิ่ม timeout การโหลดเป็น 15 วินาที
+            setTimeout(() => {
+                const loader = document.querySelector('.loader');
+                if (loader.style.display !== 'none') {
+                    loader.classList.add('error');
+                    loader.querySelector('p').textContent = 'การโหลดช้าเกินไป กรุณารีเฟรช';
+                }
+            }, 15000);
+        }
     </script>
 </body>
 </html>
-
-
