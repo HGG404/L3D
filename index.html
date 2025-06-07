@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://script.google.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self' https://script.google.com; frame-src 'self' https://script.google.com;">
     <title>3DShop - ไฟล์ดิจิทัลคุณภาพสูง</title>
     <meta name="description" content="ค้นพบไฟล์ดิจิทัลคุณภาพสูงสำหรับงานออกแบบและโปรเจกต์ของคุณที่ 3DShop">
     <!-- Font Awesome CDN สำหรับไอคอน -->
@@ -26,43 +25,19 @@
             width: 100%;
             height: 100%;
             border: none;
-            display: block;
-        }
-        .error-message {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #fff;
-            padding: 20px;
-            border: 2px solid #ff4d4d;
-            border-radius: 5px;
-            text-align: center;
-            z-index: 1000;
-            display: none;
+            display: block; /* Show iframe immediately */
         }
     </style>
 </head>
 <body>
-    <div id="errorMessage" class="error-message">
-        <p>ไม่สามารถโหลด 3DShop ได้ อาจเกิดจาก:</p>
-        <ul>
-            <li>URL ของ Google Apps Script ไม่ถูกต้อง</li>
-            <li>นโยบายความปลอดภัยบล็อกการโหลด</li>
-        </ul>
-        <p>กรุณาตรวจสอบการตั้งค่า Web App ใน Google Apps Script หรือติดต่อผู้ดูแลระบบ</p>
-        <button onclick="location.reload()">รีเฟรช</button>
-    </div>
     <iframe id="shopIframe" 
-            src="https://script.google.com/macros/s/AKfycbwK8zYthgYP8cwowixMrGJT3mokYkGcbtf2EgQFodvMu2tGiNSodl4Iv0f_1gaj_dM/exec" 
+            src="https://script.google.com/macros/s/AKfycbzxKvRAsb73D_kaljzJ8-Bvd4V7op4Uo6E8aUQUnyI7Lu12wwZGz-E_uQ75zRuXtjA/exec" 
             title="3DShop" 
-            sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation"
-            allow="geolocation; microphone; camera; midi; encrypted-media; display-capture"
             allowfullscreen
             onload="onIframeLoad()"
             onerror="onIframeError()"></iframe>
     <script>
-        // คืนค่า sessionStorage จาก localStorage เมื่อโหลดหน้า
+        // Restore sessionStorage from localStorage on page load
         (function restoreSession() {
             console.log('Restoring session...');
             const sessionData = localStorage.getItem('3DShopSession');
@@ -81,13 +56,15 @@
             }
         })();
 
-        // เริ่มต้นการซูมสำหรับภาพใน iframe
+        // Check if browser is Firefox
+        function isFirefox() {
+            return navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+        }
+
+        // Initialize zoom for images in iframe
         function initializeZoom() {
             const iframe = document.getElementById('shopIframe');
-            if (!iframe || !iframe.contentDocument) {
-                console.warn('Iframe or contentDocument not available');
-                return;
-            }
+            if (!iframe || !iframe.contentDocument) return;
 
             const images = iframe.contentDocument.querySelectorAll('img');
             images.forEach(img => {
@@ -115,24 +92,23 @@
             };
         }
 
-        // จัดการเมื่อ iframe โหลดสำเร็จ
+        // Handle iframe load
         function onIframeLoad() {
             console.log('Iframe loaded successfully');
             initializeZoom();
-            document.getElementById('errorMessage').style.display = 'none';
         }
 
-        // จัดการเมื่อ iframe โหลดล้มเหลว
+        // Handle iframe load error
         function onIframeError() {
-            console.error('Iframe failed to load due to potential CSP or cross-origin issue');
-            document.getElementById('errorMessage').style.display = 'block';
+            console.error('Iframe failed to load');
+            // Retry loading iframe after 5 seconds
             setTimeout(() => {
                 const iframe = document.getElementById('shopIframe');
                 iframe.src = iframe.src;
             }, 5000);
         }
 
-        // เก็บ sessionStorage ลง localStorage ก่อนรีเฟรช
+        // Save sessionStorage to localStorage before refresh
         window.addEventListener('beforeunload', function() {
             const userEmail = sessionStorage.getItem('userEmail');
             const userName = sessionStorage.getItem('userName');
@@ -146,6 +122,22 @@
                 }));
             }
         });
+
+        // If Firefox, show warning and remove iframe
+        if (isFirefox()) {
+            document.body.innerHTML = `
+                <div style="height: 100%; background: linear-gradient(135deg, #2c3e50, #1a252f); display: flex; justify-content: center; align-items: center;">
+                    <div style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 30px; max-width: 600px; text-align: center; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ff4d4d; margin-bottom: 20px;"></i>
+                        <p style="font-size: 18px; color: #ff4d4d; margin: 0 0 20px;">ขออภัย 3DShop ไม่รองรับเบราว์เซอร์ Firefox</p>
+                        <p style="font-size: 14px; color: #fff;">กรุณาใช้ Google Chrome, Safari หรือ Microsoft Edge</p>
+                        <a href="https://www.google.com/chrome/" style="display: inline-block; padding: 10px 20px; background: #d4af37; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold;">ดาวน์โหลด Chrome</a>
+                    </div>
+                </div>
+            `;
+            const iframe = document.getElementById('shopIframe');
+            iframe.parentNode.removeChild(iframe);
+        }
     </script>
 </body>
 </html>
