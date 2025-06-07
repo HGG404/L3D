@@ -25,137 +25,43 @@
             width: 100%;
             height: 100%;
             border: none;
-            display: none;
-        }
-        .loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1e3a8a, #4b5563);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 999;
-            transition: opacity 0.3s ease-out;
-        }
-        .loader-content {
-            text-align: center;
-            padding: 20px;
-        }
-        .loader-content i {
-            font-size: 24px;
-            color: #d4af37;
-        }
-        .loader-content p {
-            font-size: 14px;
-            color: #fff;
-            margin: 10px 0 0;
-            text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-        }
-        .loader.error p {
-            color: #ff4d4d;
-            font-weight: bold;
-        }
-        .loader.error i {
-            display: none;
-        }
-        .loader.firefox-warning {
-            background: linear-gradient(135deg, #2c3e50, #1a252f);
-            overflow: auto;
-        }
-        .loader.firefox-warning .loader-content {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 30px;
-            max-width: 600px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            z-index: 1000;
-            animation: fadeIn 1s ease-in-out;
-        }
-        .loader.firefox-warning i {
-            display: block;
-            font-size: 48px;
-            color: #ff4d4d;
-            margin-bottom: 20px;
-        }
-        .loader.firefox-warning p {
-            font-size: 18px;
-            color: #ff4d4d;
-            margin: 0 0 20px;
-            text-shadow: none;
-        }
-        .loader.firefox-warning .browser-btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background: #d4af37;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            transition: background 0.3s ease;
-        }
-        .loader.firefox-warning .browser-btn:hover {
-            background: #b8972e;
-        }
-        @keyframes fadeIn {
-            0% { opacity: 0; transform: translateY(20px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-        @media (max-width: 768px) {
-            .loader-content p { font-size: 12px; }
-            .loader-content i { font-size: 20px; }
-            .loader.firefox-warning p { font-size: 16px; }
-            .loader.firefox-warning i { font-size: 36px; }
-            .loader.firefox-warning .loader-content { padding: 20px; max-width: 90%; }
+            display: block; /* Show iframe immediately */
         }
     </style>
 </head>
 <body>
-    <div class="loader">
-        <div class="loader-content">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p>กำลังโหลด 3DShop</p>
-        </div>
-    </div>
     <iframe id="shopIframe" 
-            src="https://script.google.com/macros/s/AKfycbzxKvRAsb73D_kaljzJ8-Bvd4V7op4Uo6E8aUQUnyI7Lu12wwZGz-E_uQ75zRuXtjA/exec" 
+            src="https://script.google.com/macros/s/AKfycbwK8zYthgYP8cwowixMrGJT3mokYkGcbtf2EgQFodvMu2tGiNSodl4Iv0f_1gaj_dM/exec" 
             title="3DShop" 
             allowfullscreen
             onload="onIframeLoad()"
             onerror="onIframeError()"></iframe>
     <script>
-        // ฟังก์ชันจัดการ cookie
-        function setCookie(name, value, days) {
-            let expires = '';
-            if (days) {
-                const date = new Date();
-                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-                expires = '; expires=' + date.toUTCString();
+        // Restore sessionStorage from localStorage on page load
+        (function restoreSession() {
+            console.log('Restoring session...');
+            const sessionData = localStorage.getItem('3DShopSession');
+            if (sessionData) {
+                try {
+                    const { userEmail, userName, isGoogleUser } = JSON.parse(sessionData);
+                    if (userEmail && userName) {
+                        console.log('Restoring session:', { userEmail, userName, isGoogleUser });
+                        sessionStorage.setItem('userEmail', userEmail);
+                        sessionStorage.setItem('userName', userName);
+                        sessionStorage.setItem('isGoogleUser', isGoogleUser);
+                    }
+                } catch (e) {
+                    console.error('Error restoring session:', e);
+                }
             }
-            document.cookie = name + '=' + encodeURIComponent(value) + expires + '; path=/; SameSite=None; Secure';
-        }
+        })();
 
-        function getCookie(name) {
-            const nameEQ = name + '=';
-            const ca = document.cookie.split(';');
-            for (let i = 0; i < ca.length; i++) {
-                let c = ca[i];
-                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-                if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
-            }
-            return null;
-        }
-
-        // ตรวจสอบว่าเป็น Firefox หรือไม่
+        // Check if browser is Firefox
         function isFirefox() {
             return navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
         }
 
-        // เริ่มต้นการซูมสำหรับภาพใน iframe
+        // Initialize zoom for images in iframe
         function initializeZoom() {
             const iframe = document.getElementById('shopIframe');
             if (!iframe || !iframe.contentDocument) return;
@@ -186,80 +92,51 @@
             };
         }
 
-        // จัดการเมื่อ iframe โหลดสำเร็จ
+        // Handle iframe load
         function onIframeLoad() {
             console.log('Iframe loaded successfully');
-            const loader = document.querySelector('.loader');
-            const iframe = document.getElementById('shopIframe');
-            loader.style.opacity = '0';
-            setTimeout(() => {
-                loader.style.display = 'none';
-                iframe.style.display = 'block';
-            }, 300);
             initializeZoom();
         }
 
-        // จัดการเมื่อ iframe โหลดล้มเหลว
+        // Handle iframe load error
         function onIframeError() {
             console.error('Iframe failed to load');
-            const loader = document.querySelector('.loader');
-            loader.classList.add('error');
-            loader.querySelector('p').textContent = 'ไม่สามารถโหลด 3DShop ได้ กรุณารีเฟรช';
+            // Retry loading iframe after 5 seconds
             setTimeout(() => {
                 const iframe = document.getElementById('shopIframe');
                 iframe.src = iframe.src;
-            }, 3000);
+            }, 5000);
         }
 
-        // เก็บข้อมูลล็อกอินใน cookie ก่อนรีเฟรช
+        // Save sessionStorage to localStorage before refresh
         window.addEventListener('beforeunload', function() {
             const userEmail = sessionStorage.getItem('userEmail');
             const userName = sessionStorage.getItem('userName');
             const isGoogleUser = sessionStorage.getItem('isGoogleUser');
             if (userEmail && userName) {
-                console.log('Saving session to cookies');
-                setCookie('3DShop_userEmail', userEmail, 1);
-                setCookie('3DShop_userName', userName, 1);
-                setCookie('3DShop_isGoogleUser', isGoogleUser, 1);
+                console.log('Saving session to localStorage');
+                localStorage.setItem('3DShopSession', JSON.stringify({
+                    userEmail: userEmail,
+                    userName: userName,
+                    isGoogleUser: isGoogleUser
+                }));
             }
         });
 
-        // คืนค่าข้อมูลล็อกอินจาก cookie เมื่อหน้าโหลด
-        function restoreSessionFromCookies() {
-            const userEmail = getCookie('3DShop_userEmail');
-            const userName = getCookie('3DShop_userName');
-            const isGoogleUser = getCookie('3DShop_isGoogleUser');
-            if (userEmail && userName) {
-                console.log('Restoring session from cookies:', { userEmail, userName, isGoogleUser });
-                sessionStorage.setItem('userEmail', userEmail);
-                sessionStorage.setItem('userName', userName);
-                sessionStorage.setItem('isGoogleUser', isGoogleUser || 'false');
-            }
-        }
-
-        // เรียกคืนค่าเมื่อหน้าโหลด
-        restoreSessionFromCookies();
-
-        // ถ้าเป็น Firefox แสดงข้อความแจ้งเตือนและหยุดการโหลด
+        // If Firefox, show warning and remove iframe
         if (isFirefox()) {
-            const loader = document.querySelector('.loader');
-            loader.classList.add('firefox-warning');
-            loader.querySelector('.loader-content').innerHTML = `
-                <i class="fas fa-exclamation-triangle"></i>
-                <p>ขออภัย 3DShop ไม่รองรับเบราว์เซอร์ Firefox</p>
-                <p style="color: #fff; font-size: 14px;">กรุณาใช้ Google Chrome, Safari หรือ Microsoft Edge</p>
-                <a href="https://www.google.com/chrome/" class="browser-btn">ดาวน์โหลด Chrome</a>
+            document.body.innerHTML = `
+                <div style="height: 100%; background: linear-gradient(135deg, #2c3e50, #1a252f); display: flex; justify-content: center; align-items: center;">
+                    <div style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 30px; max-width: 600px; text-align: center; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ff4d4d; margin-bottom: 20px;"></i>
+                        <p style="font-size: 18px; color: #ff4d4d; margin: 0 0 20px;">ขออภัย 3DShop ไม่รองรับเบราว์เซอร์ Firefox</p>
+                        <p style="font-size: 14px; color: #fff;">กรุณาใช้ Google Chrome, Safari หรือ Microsoft Edge</p>
+                        <a href="https://www.google.com/chrome/" style="display: inline-block; padding: 10px 20px; background: #d4af37; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold;">ดาวน์โหลด Chrome</a>
+                    </div>
+                </div>
             `;
             const iframe = document.getElementById('shopIframe');
             iframe.parentNode.removeChild(iframe);
-        } else {
-            setTimeout(() => {
-                const loader = document.querySelector('.loader');
-                if (loader.style.display !== 'none') {
-                    loader.classList.add('error');
-                    loader.querySelector('p').textContent = 'การโหลดช้าเกินไป กรุณารีเฟรช';
-                }
-            }, 8000);
         }
     </script>
 </body>
