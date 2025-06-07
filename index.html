@@ -121,12 +121,8 @@
             <p>กำลังโหลด 3DShop</p>
         </div>
     </div>
-    <iframe id="shopIframe" 
-            src="https://script.google.com/macros/s/AKfycbzxKvRAsb73D_kaljzJ8-Bvd4V7op4Uo6E8aUQUnyI7Lu12wwZGz-E_uQ75zRuXtjA/exec" 
-            title="3DShop" 
-            allowfullscreen
-            onload="onIframeLoad()"
-            onerror="onIframeError()"></iframe>
+    <iframe id="shopIframe" src="" title="3DShop" allowfullscreen
+            onload="onIframeLoad()" onerror="onIframeError()"></iframe>
     <script>
         // ตรวจสอบว่าเป็น Firefox หรือไม่
         function isFirefox() {
@@ -146,9 +142,7 @@
                     e.stopPropagation();
                     Swal.fire({
                         title: 'ภาพสินค้า',
-                        html: `
-                            <img src="${img.src}" style="max-width:100%; max-height:80vh; border-radius:12px;" />
-                        `,
+                        html: `<img src="${img.src}" style="max-width:100%; max-height:80vh; border-radius:12px;" />`,
                         background: '#1f2937',
                         showConfirmButton: false,
                         showCloseButton: true,
@@ -174,25 +168,6 @@
                 loader.style.display = 'none';
                 iframe.style.display = 'block';
             }, 300);
-
-            // ส่งข้อมูลล็อกอินไปยัง iframe ผ่าน postMessage
-            const sessionData = localStorage.getItem('3DShopSession');
-            if (sessionData) {
-                try {
-                    const { userEmail, userName, isGoogleUser } = JSON.parse(sessionData);
-                    if (userEmail && userName) {
-                        console.log('Sending session data to iframe:', { userEmail, userName, isGoogleUser });
-                        iframe.contentWindow.postMessage({
-                            type: 'restoreSession',
-                            userEmail: userEmail,
-                            userName: userName,
-                            isGoogleUser: isGoogleUser
-                        }, 'https://script.google.com');
-                    }
-                } catch (e) {
-                    console.error('Error sending session data:', e);
-                }
-            }
             initializeZoom();
         }
 
@@ -223,6 +198,31 @@
             }
         });
 
+        // ตั้งค่า iframe src พร้อม session data
+        function setIframeSrc() {
+            const iframe = document.getElementById('shopIframe');
+            const baseUrl = 'https://script.google.com/macros/s/AKfycbzxKvRAsb73D_kaljzJ8-Bvd4V7op4Uo6E8aUQUnyI7Lu12wwZGz-E_uQ75zRuXtjA/exec';
+            const sessionData = localStorage.getItem('3DShopSession');
+            let src = baseUrl;
+            if (sessionData) {
+                try {
+                    const { userEmail, userName, isGoogleUser } = JSON.parse(sessionData);
+                    if (userEmail && userName) {
+                        console.log('Setting iframe src with session data:', { userEmail, userName, isGoogleUser });
+                        const params = new URLSearchParams({
+                            userEmail: userEmail,
+                            userName: encodeURIComponent(userName),
+                            isGoogleUser: isGoogleUser
+                        });
+                        src = `${baseUrl}?${params.toString()}`;
+                    }
+                } catch (e) {
+                    console.error('Error parsing session data:', e);
+                }
+            }
+            iframe.src = src;
+        }
+
         // ถ้าเป็น Firefox แสดงข้อความแจ้งเตือนและหยุดการโหลด
         if (isFirefox()) {
             const loader = document.querySelector('.loader');
@@ -236,6 +236,7 @@
             const iframe = document.getElementById('shopIframe');
             iframe.parentNode.removeChild(iframe);
         } else {
+            setIframeSrc();
             setTimeout(() => {
                 const loader = document.querySelector('.loader');
                 if (loader.style.display !== 'none') {
