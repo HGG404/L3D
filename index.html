@@ -27,12 +27,31 @@
             border: none;
             display: block;
         }
+        .error-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            padding: 20px;
+            border: 2px solid #ff4d4d;
+            border-radius: 5px;
+            text-align: center;
+            z-index: 1000;
+            display: none;
+        }
     </style>
 </head>
 <body>
+    <div id="errorMessage" class="error-message">
+        <p>ไม่สามารถโหลด 3DShop ได้ กรุณาตรวจสอบการเชื่อมต่อหรือติดต่อผู้ดูแลระบบ</p>
+        <button onclick="location.reload()">รีเฟรช</button>
+    </div>
     <iframe id="shopIframe" 
             src="https://script.google.com/macros/s/AKfycbwK8zYthgYP8cwowixMrGJT3mokYkGcbtf2EgQFodvMu2tGiNSodl4Iv0f_1gaj_dM/exec" 
             title="3DShop" 
+            sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+            allow="geolocation; microphone; camera; midi; encrypted-media; display-capture"
             allowfullscreen
             onload="onIframeLoad()"
             onerror="onIframeError()"></iframe>
@@ -94,11 +113,13 @@
         function onIframeLoad() {
             console.log('Iframe loaded successfully');
             initializeZoom();
+            document.getElementById('errorMessage').style.display = 'none';
         }
 
         // จัดการเมื่อ iframe โหลดล้มเหลว
         function onIframeError() {
             console.error('Iframe failed to load');
+            document.getElementById('errorMessage').style.display = 'block';
             setTimeout(() => {
                 const iframe = document.getElementById('shopIframe');
                 iframe.src = iframe.src;
