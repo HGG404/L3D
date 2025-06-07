@@ -25,7 +25,7 @@
             width: 100%;
             height: 100%;
             border: none;
-            display: block; /* Show iframe immediately */
+            display: block;
         }
     </style>
 </head>
@@ -37,7 +37,7 @@
             onload="onIframeLoad()"
             onerror="onIframeError()"></iframe>
     <script>
-        // Restore sessionStorage from localStorage on page load
+        // คืนค่า sessionStorage จาก localStorage เมื่อโหลดหน้า
         (function restoreSession() {
             console.log('Restoring session...');
             const sessionData = localStorage.getItem('3DShopSession');
@@ -56,15 +56,13 @@
             }
         })();
 
-        // Check if browser is Firefox
-        function isFirefox() {
-            return navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-        }
-
-        // Initialize zoom for images in iframe
+        // เริ่มต้นการซูมสำหรับภาพใน iframe
         function initializeZoom() {
             const iframe = document.getElementById('shopIframe');
-            if (!iframe || !iframe.contentDocument) return;
+            if (!iframe || !iframe.contentDocument) {
+                console.warn('Iframe or contentDocument not available');
+                return;
+            }
 
             const images = iframe.contentDocument.querySelectorAll('img');
             images.forEach(img => {
@@ -92,23 +90,22 @@
             };
         }
 
-        // Handle iframe load
+        // จัดการเมื่อ iframe โหลดสำเร็จ
         function onIframeLoad() {
             console.log('Iframe loaded successfully');
             initializeZoom();
         }
 
-        // Handle iframe load error
+        // จัดการเมื่อ iframe โหลดล้มเหลว
         function onIframeError() {
             console.error('Iframe failed to load');
-            // Retry loading iframe after 5 seconds
             setTimeout(() => {
                 const iframe = document.getElementById('shopIframe');
                 iframe.src = iframe.src;
             }, 5000);
         }
 
-        // Save sessionStorage to localStorage before refresh
+        // เก็บ sessionStorage ลง localStorage ก่อนรีเฟรช
         window.addEventListener('beforeunload', function() {
             const userEmail = sessionStorage.getItem('userEmail');
             const userName = sessionStorage.getItem('userName');
@@ -122,22 +119,6 @@
                 }));
             }
         });
-
-        // If Firefox, show warning and remove iframe
-        if (isFirefox()) {
-            document.body.innerHTML = `
-                <div style="height: 100%; background: linear-gradient(135deg, #2c3e50, #1a252f); display: flex; justify-content: center; align-items: center;">
-                    <div style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 30px; max-width: 600px; text-align: center; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ff4d4d; margin-bottom: 20px;"></i>
-                        <p style="font-size: 18px; color: #ff4d4d; margin: 0 0 20px;">ขออภัย 3DShop ไม่รองรับเบราว์เซอร์ Firefox</p>
-                        <p style="font-size: 14px; color: #fff;">กรุณาใช้ Google Chrome, Safari หรือ Microsoft Edge</p>
-                        <a href="https://www.google.com/chrome/" style="display: inline-block; padding: 10px 20px; background: #d4af37; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold;">ดาวน์โหลด Chrome</a>
-                    </div>
-                </div>
-            `;
-            const iframe = document.getElementById('shopIframe');
-            iframe.parentNode.removeChild(iframe);
-        }
     </script>
 </body>
 </html>
