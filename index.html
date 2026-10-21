@@ -25,11 +25,42 @@
             width: 100%;
             height: 100%;
             border: none;
-            display: block; /* Show iframe immediately */
+            display: block;
         }
-<script>
-    location.replace('https://script.google.com/macros/s/AKfycbzXcx48e4Ct6dx10S1oFsjtO2TnSnUHQyrVqza7yJntptpigGENXiUCnnkgIdfwFe4/exec' + location.search);
-  </script>
+    </style>
+</head>
+<body>
+    <!-- src ถูกตั้งด้วย JS ด้านล่าง เพื่อส่งต่อ ?p= (ลิงก์แชร์สินค้า) และ ?ref= (ลิงก์ชวนเพื่อน) ไปให้ Apps Script -->
+    <iframe id="shopIframe"
+            title="3DShop"
+            allowfullscreen
+            onload="onIframeLoad()"
+            onerror="onIframeError()"></iframe>
+    <noscript>กรุณาเปิดใช้งาน JavaScript เพื่อใช้งาน 3DShop</noscript>
+
+    <script>
+        // ลิงก์ Web App ของ Apps Script (ลิงก์ /exec เดิม)
+        var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzXcx48e4Ct6dx10S1oFsjtO2TnSnUHQyrVqza7yJntptpigGENXiUCnnkgIdfwFe4/exec';
+
+        // ส่งต่อเฉพาะพารามิเตอร์ที่อนุญาต (p = รหัสสินค้า, ref = รหัสชวนเพื่อน) และกรองให้เหลือตัวอักษรปลอดภัย
+        function buildShopUrl() {
+            var out = [];
+            try {
+                var params = new URLSearchParams(location.search);
+                ['p', 'ref'].forEach(function (k) {
+                    var v = params.get(k);
+                    if (!v) return;
+                    v = v.replace(/[^A-Za-z0-9_-]/g, '').substring(0, 24);
+                    if (v) out.push(k + '=' + encodeURIComponent(v));
+                });
+            } catch (e) {
+                console.warn('อ่านพารามิเตอร์ไม่ได้:', e);
+            }
+            return APPS_SCRIPT_URL + (out.length ? '?' + out.join('&') : '');
+        }
+
+        document.getElementById('shopIframe').src = buildShopUrl();
+
         // Restore sessionStorage from localStorage on page load
         (function restoreSession() {
             console.log('Restoring session...');
@@ -52,11 +83,11 @@
         // Initialize zoom for images in iframe
         function initializeZoom() {
             const iframe = document.getElementById('shopIframe');
-            
+
             // ใช้ try-catch เพื่อป้องกัน Cross-Origin Error
             try {
-                // หมายเหตุ: การเข้าถึง contentDocument จะทำได้ก็ต่อเมื่อ Iframe อยู่บนโดเมนเดียวกัน (Same Origin)
-                // หาก Google Apps Script บล็อกการเข้าถึง ส่วนนี้จะถูกข้ามไปโดยไม่ทำให้เว็บพัง
+                // การเข้าถึง contentDocument ทำได้เฉพาะ Same Origin
+                // หาก Google Apps Script บล็อก ส่วนนี้จะถูกข้ามไปโดยไม่ทำให้เว็บพัง
                 if (!iframe || !iframe.contentDocument) return;
 
                 const images = iframe.contentDocument.querySelectorAll('img');
@@ -78,7 +109,6 @@
                     });
                 });
 
-                const originalRequestFullscreen = iframe.contentDocument.documentElement.requestFullscreen;
                 iframe.contentDocument.documentElement.requestFullscreen = function() {
                     console.warn('requestFullscreen ถูกปิดการใช้งานใน iframe');
                     return Promise.reject(new Error('Fullscreen is disabled in this context'));
@@ -91,17 +121,14 @@
         // Handle iframe load
         function onIframeLoad() {
             console.log('Iframe loaded successfully');
-            // รอเล็กน้อยเพื่อให้ DOM ภายใน Iframe โหลดเสร็จสมบูรณ์ (ถ้าเข้าถึงได้)
             setTimeout(initializeZoom, 1000);
         }
 
-        // Handle iframe load error
+        // Handle iframe load error: ลองโหลดใหม่หลัง 5 วินาที (ใช้ลิงก์เดิมรวมพารามิเตอร์)
         function onIframeError() {
             console.error('Iframe failed to load');
-            // Retry loading iframe after 5 seconds
             setTimeout(() => {
-                const iframe = document.getElementById('shopIframe');
-                iframe.src = iframe.src;
+                document.getElementById('shopIframe').src = buildShopUrl();
             }, 5000);
         }
 
@@ -119,8 +146,6 @@
                 }));
             }
         });
-
-        // ส่วนที่บล็อก Firefox ถูกลบออกแล้ว
     </script>
 </body>
 </html>
